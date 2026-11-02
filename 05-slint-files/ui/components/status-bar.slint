@@ -1,0 +1,30 @@
+// A reusable status bar: one left text that grows, one right text that keeps
+// its natural width.
+
+export component StatusBar inherits Rectangle {
+    in property <string> text;
+    in property <string> position;
+
+    height: 34px;
+    background: #ffffff;
+    border-width: 1px;
+    border-color: #d7dbe0;
+
+    HorizontalLayout {
+        padding-left: 16px;
+        padding-right: 16px;
+        spacing: 12px;
+
+        Text {
+            text: root.text;
+            horizontal-stretch: 1;
+            vertical-alignment: center;
+            color: #1c1f23;
+        }
+        Text {
+            text: root.position;
+            vertical-alignment: center;
+            color: #5f6670;
+        }
+    }
+}

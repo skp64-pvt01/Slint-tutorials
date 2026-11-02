@@ -1,0 +1,17 @@
+[package]
+name = "step-05-slint-files"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "05-slint-files"
+path = "src/main.rs"
+
+[dependencies]
+slint.workspace = true
+
+[build-dependencies]
+slint-build.workspace = true

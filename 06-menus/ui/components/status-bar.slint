@@ -1,0 +1,30 @@
+// A reusable status bar with a dark variant.
+
+export component StatusBar inherits Rectangle {
+    in property <string> text;
+    in property <string> position;
+    in property <bool> dark: false;
+
+    height: 34px;
+    background: root.dark ? #22262b : #ffffff;
+    border-width: 1px;
+    border-color: root.dark ? #2d3238 : #d7dbe0;
+
+    HorizontalLayout {
+        padding-left: 16px;
+        padding-right: 16px;
+        spacing: 12px;
+
+        Text {
+            text: root.text;
+            horizontal-stretch: 1;
+            vertical-alignment: center;
+            color: root.dark ? #e8eaed : #1c1f23;
+        }
+        Text {
+            text: root.position;
+            vertical-alignment: center;
+            color: root.dark ? #9aa0a6 : #5f6670;
+        }
+    }
+}

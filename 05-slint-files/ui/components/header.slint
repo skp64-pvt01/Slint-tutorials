@@ -1,0 +1,33 @@
+// A reusable header. `export component` is the whole API: the parent sets the
+// two strings and nothing else.
+//
+// Notice that the component is a Rectangle with a fixed height. A layout child
+// that must not grow says so with its own size, not with a special slot.
+
+export component SectionHeader inherits Rectangle {
+    in property <string> title;
+    in property <string> subtitle;
+
+    height: 56px;
+    background: #ffffff;
+    border-width: 1px;
+    border-color: #d7dbe0;
+
+    HorizontalLayout {
+        padding-left: 16px;
+        padding-right: 16px;
+        spacing: 12px;
+
+        Text {
+            text: root.title;
+            font-size: 22px;
+            vertical-alignment: center;
+        }
+        Rectangle { horizontal-stretch: 1; }
+        Text {
+            text: root.subtitle;
+            color: #5f6670;
+            vertical-alignment: center;
+        }
+    }
+}

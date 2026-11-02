@@ -1,0 +1,70 @@
+// Tutorial 05 - the window is a file now.
+//
+// `import` is relative to this file. Each component lives in its own file and
+// exposes only the properties its parent needs.
+
+import { Button, LineEdit } from "std-widgets.slint";
+import { SectionHeader } from "components/header.slint";
+import { StatusBar } from "components/status-bar.slint";
+
+export component MainWindow inherits Window {
+    title: "Tutorial 05 - Slint files";
+    width: 560px;
+    height: 360px;
+    background: #f5f6f8;
+
+    in-out property <string> name;
+    in-out property <string> greeting: "Hello, world!";
+    in-out property <string> status: "Ready";
+
+    callback greet();
+    callback quit-requested();
+
+    VerticalLayout {
+        spacing: 0px;
+
+        SectionHeader {
+            title: "Slint files";
+            subtitle: "ui/main.slint + components";
+        }
+
+        Rectangle {
+            vertical-stretch: 1;
+            background: #f5f6f8;
+
+            VerticalLayout {
+                padding: 20px;
+                spacing: 10px;
+
+                Text {
+                    text: "The interface moved out of main.rs and split into components.";
+                    wrap: word-wrap;
+                }
+                LineEdit {
+                    text: root.name;
+                    placeholder-text: "Type a name, then press Greet";
+                    edited(text) => { root.name = text; }
+                    accepted(text) => { root.name = text; root.greet(); }
+                }
+                Button {
+                    text: "Greet";
+                    primary: true;
+                    clicked => { root.greet(); }
+                }
+
+                Rectangle { vertical-stretch: 1; }
+
+                Text {
+                    text: root.greeting;
+                    font-size: 24px;
+                    horizontal-alignment: center;
+                }
+            }
+        }
+
+        StatusBar {
+            text: root.status;
+            position: "step 05";
+        }
+    }
+}

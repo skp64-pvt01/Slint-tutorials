@@ -1,0 +1,18 @@
+[package]
+name = "step-07-text-editor"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "07-text-editor"
+path = "src/main.rs"
+
+[dependencies]
+slint.workspace = true
+rfd.workspace = true
+
+[build-dependencies]
+slint-build.workspace = true

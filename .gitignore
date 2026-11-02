@@ -1,0 +1,12 @@
+# Build output
+target/
+**/build/
+*.deb
+*.tar.gz
+*.tar.xz
+
+# Editor and OS noise
+.vscode/
+.idea/
+*.swp
+.DS_Store

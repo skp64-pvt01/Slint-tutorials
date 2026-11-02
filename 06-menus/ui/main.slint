@@ -1,0 +1,145 @@
+// Tutorial 06 - a native menu bar.
+//
+// `MenuBar` is a direct child of the window; it is not part of the layout.
+// Each `MenuItem` has a `title`, an optional `@keys(...)` shortcut, and an
+// `activated` handler. The shortcut works with the menu closed and is shown
+// next to the title, as the platform expects.
+//
+// Every entry calls the same callback with a name: `root.menu-action("...")`.
+// Rust turns the name into an `Action`, so a menu entry, a button and a
+// keyboard shortcut share one dispatcher.
+
+import { StatusBar } from "components/status-bar.slint";
+
+export component MainWindow inherits Window {
+    title: "Tutorial 06 - Menus";
+    width: 640px;
+    height: 420px;
+    background: root.dark ? #1c1f23 : #f5f6f8;
+
+    in-out property <string> status: "Menu: none";
+    in-out property <bool> dark: false;
+
+    property <color> text-color: root.dark ? #e8eaed : #1c1f23;
+    property <color> muted: root.dark ? #9aa0a6 : #5f6670;
+    property <color> panel: root.dark ? #22262b : #ffffff;
+
+    callback menu-action(string);
+
+    MenuBar {
+        Menu {
+            title: "File";
+            MenuItem {
+                title: "New";
+                shortcut: @keys(Control + N);
+                activated => { root.menu-action("file.new"); }
+            }
+            MenuItem {
+                title: "Open...";
+                shortcut: @keys(Control + O);
+                activated => { root.menu-action("file.open"); }
+            }
+            MenuSeparator {}
+            MenuItem {
+                title: "Save";
+                shortcut: @keys(Control + S);
+                activated => { root.menu-action("file.save"); }
+            }
+            MenuSeparator {}
+            MenuItem {
+                title: "Quit";
+                shortcut: @keys(Control + Q);
+                activated => { root.menu-action("file.quit"); }
+            }
+        }
+        Menu {
+            title: "Edit";
+            MenuItem {
+                title: "Undo";
+                shortcut: @keys(Control + Z);
+                activated => { root.menu-action("edit.undo"); }
+            }
+            MenuItem {
+                title: "Redo";
+                shortcut: @keys(Control + Shift + Z);
+                activated => { root.menu-action("edit.redo"); }
+            }
+            MenuSeparator {}
+            MenuItem {
+                title: "Select all";
+                shortcut: @keys(Control + A);
+                activated => { root.menu-action("edit.select-all"); }
+            }
+        }
+        Menu {
+            title: "View";
+            MenuItem {
+                title: "Dark";
+                activated => { root.menu-action("view.dark"); }
+            }
+            MenuItem {
+                title: "Light";
+                activated => { root.menu-action("view.light"); }
+            }
+        }
+        Menu {
+            title: "Help";
+            MenuItem {
+                title: "Keyboard shortcuts";
+                shortcut: @keys(F1);
+                activated => { root.menu-action("help.shortcuts"); }
+            }
+            MenuItem {
+                title: "About";
+                activated => { root.menu-action("help.about"); }
+            }
+        }
+    }
+
+    Rectangle {
+        background: root.dark ? #1c1f23 : #f5f6f8;
+
+        VerticalLayout {
+            spacing: 0px;
+
+            Rectangle {
+                vertical-stretch: 1;
+
+                VerticalLayout {
+                    padding: 28px;
+                    spacing: 10px;
+
+                    Text {
+                        text: "Menus";
+                        font-size: 26px;
+                        color: root.text-color;
+                    }
+                    Text {
+                        text: "Open File and pick an entry, or press Ctrl+N, Ctrl+O, Ctrl+S.";
+                        wrap: word-wrap;
+                        color: root.muted;
+                    }
+                    Text {
+                        text: "The status bar names the last action; the View menu changes the theme.";
+                        wrap: word-wrap;
+                        color: root.muted;
+                    }
+
+                    Rectangle { vertical-stretch: 1; }
+
+                    Text {
+                        text: root.status;
+                        font-size: 18px;
+                        color: root.text-color;
+                    }
+                }
+            }
+
+            StatusBar {
+                text: root.status;
+                position: "Ctrl+Q quits";
+                dark: root.dark;
+            }
+        }
+    }
+}

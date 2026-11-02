@@ -1,0 +1,31 @@
+# Slint tutorials for Rust - one crate per step, built together.
+
+[workspace]
+resolver = "2"
+
+members = [
+    "01-first-window",
+    "02-layout",
+    "03-controls",
+    "04-actions",
+    "05-slint-files",
+    "06-menus",
+    "07-text-editor",
+    "08-capstone-notes",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.92"
+license = "GPL-3.0-only"
+publish = false
+
+# Slint is a normal crates.io dependency here: no native library to install.
+# `i-slint-backend-testing` is pinned exactly: the testing backend is an
+# internal crate, and its API is only stable within a Slint release.
+[workspace.dependencies]
+slint = "1.18.1"
+slint-build = "1.18.1"
+i-slint-backend-testing = "=1.18.1"
+rfd = "0.17.2"

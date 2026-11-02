@@ -1,0 +1,119 @@
+// Tutorial 07 - a text editor.
+//
+// `TextEdit` (the widget) hides the cursor offset. This window uses the
+// lower-level `TextInput` instead: `single-line: false` makes it a text area,
+// and it reports the byte offset of the cursor, which Rust turns into
+// "Ln / Col / characters".
+//
+// The `ScrollView` around it follows the cursor with the same arithmetic the
+// std-widgets `TextEdit` uses.
+
+import { Button, ScrollView } from "std-widgets.slint";
+
+export component MainWindow inherits Window {
+    title: root.doc-title;
+    width: 720px;
+    height: 520px;
+    background: #f5f6f8;
+
+    in-out property <string> doc-title: "Untitled - Tutorial 07";
+    in-out property <string> text;
+    in-out property <string> status: "Ready";
+    in-out property <string> position: "Ln 1, Col 1 · 0 characters";
+    in-out property <length> content-x <=> scroll-view.content-x;
+    in-out property <length> content-y <=> scroll-view.content-y;
+
+    callback edited(string);
+    callback cursor-moved(int);
+    callback open-requested();
+    callback save-requested();
+    callback quit-requested();
+
+    VerticalLayout {
+        spacing: 0px;
+
+        // toolbar
+        Rectangle {
+            height: 46px;
+            background: #ffffff;
+            border-width: 1px;
+            border-color: #d7dbe0;
+
+            HorizontalLayout {
+                padding-left: 8px;
+                padding-right: 8px;
+                spacing: 6px;
+                alignment: start;
+
+                Button { text: "Open..."; clicked => { root.open-requested(); } }
+                Button { text: "Save"; primary: true; clicked => { root.save-requested(); } }
+                Rectangle { horizontal-stretch: 1; }
+                Button { text: "Quit"; clicked => { root.quit-requested(); } }
+            }
+        }
+
+        // editor
+        Rectangle {
+            vertical-stretch: 1;
+            background: #ffffff;
+
+            scroll-view := ScrollView {
+                x: 8px;
+                y: 8px;
+                width: parent.width - 16px;
+                height: parent.height - 16px;
+
+                content-width: self.visible-width;
+                content-height: max(self.visible-height, text-input.preferred-height);
+
+                text-input := TextInput {
+                    text <=> root.text;
+                    single-line: false;
+                    wrap: word-wrap;
+                    font-family: "monospace";
+                    font-size: 14px;
+                    selection-background-color: #b3d4ff;
+                    selection-foreground-color: #1c1f23;
+                    page-height: scroll-view.visible-height;
+
+                    edited => { root.edited(self.text); }
+
+                    cursor-position-changed(cpos) => {
+                        if (cpos.y + root.content-y < 0px) {
+                            root.content-y = min(0px, max(scroll-view.visible-height - self.height, -cpos.y));
+                        } else if (cpos.y + root.content-y > scroll-view.visible-height - 20px) {
+                            root.content-y = min(0px, max(scroll-view.visible-height - self.height, scroll-view.visible-height - cpos.y - 20px));
+                        }
+                        root.cursor-moved(self.cursor-position-byte-offset);
+                    }
+                }
+            }
+        }
+
+        // status bar
+        Rectangle {
+            height: 34px;
+            background: #ffffff;
+            border-width: 1px;
+            border-color: #d7dbe0;
+
+            HorizontalLayout {
+                padding-left: 12px;
+                padding-right: 12px;
+                spacing: 12px;
+
+                Text {
+                    text: root.status;
+                    horizontal-stretch: 1;
+                    vertical-alignment: center;
+                    color: #1c1f23;
+                }
+                Text {
+                    text: root.position;
+                    vertical-alignment: center;
+                    color: #5f6670;
+                }
+            }
+        }
+    }
+}

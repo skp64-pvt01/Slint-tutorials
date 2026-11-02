@@ -1,0 +1,13 @@
+Slint Tutorials
+
+A Rust course that builds a small notes editor with Slint
+(https://slint.dev/), inspired by Raven Tutorials.
+
+This project uses the GPL-3.0-only option of Slint's licensing. Slint is
+available under GPL-3.0-only or under the Slint Royalty-free license; the
+application code in this repository, and any binary built from it, is
+distributed under GPL-3.0-only. See LICENSE.
+
+Slint itself is not vendored: it is fetched from crates.io as a normal Cargo
+dependency. No Raven source or library is included, and Raven is not a
+dependency of this course.

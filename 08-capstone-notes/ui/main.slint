@@ -1,0 +1,274 @@
+// Tutorial 08 - Notes, the starter project.
+//
+// The window is the shape every editor starts from:
+//
+//   MenuBar       File / Edit / View / Help, with shortcuts
+//   toolbar       the three actions a user needs first
+//   editor        TextInput (multiline) in a ScrollView
+//   status bar    the message and the cursor position
+//   overlay       Help > Keyboard shortcuts / About
+//
+// The menu and the toolbar call the same `action(name)` callback. Rust owns
+// the file, the dirty flag and every display string.
+
+import { Button, ScrollView } from "std-widgets.slint";
+
+export component MainWindow inherits Window {
+    title: root.doc-title;
+    width: 900px;
+    height: 600px;
+    background: root.dark ? #15171a : #f5f6f8;
+
+    in-out property <string> doc-title: "Untitled - Notes";
+    in-out property <string> text;
+    in-out property <string> status: "Ready";
+    in-out property <string> position: "Ln 1, Col 1 · 0 characters";
+    in-out property <bool> dark: false;
+    in-out property <bool> help-open: false;
+    in-out property <string> help-title;
+    in-out property <string> help-text;
+    in-out property <length> content-x <=> scroll-view.content-x;
+    in-out property <length> content-y <=> scroll-view.content-y;
+
+    property <color> text-color: root.dark ? #e8eaed : #1c1f23;
+    property <color> muted: root.dark ? #9aa0a6 : #5f6670;
+    property <color> panel: root.dark ? #1d2024 : #ffffff;
+    property <color> panel2: root.dark ? #22262b : #eef0f3;
+    property <color> border-color: root.dark ? #2d3238 : #d7dbe0;
+
+    callback action(string);
+    callback edited(string);
+    callback cursor-moved(int);
+
+    // Edit menu entries call these; Rust reaches them with invoke_*().
+    public function undo() { text-input.undo(); }
+    public function redo() { text-input.redo(); }
+    public function select-all() { text-input.select-all(); }
+
+    MenuBar {
+        Menu {
+            title: "File";
+            MenuItem {
+                title: "New";
+                shortcut: @keys(Control + N);
+                activated => { root.action("file.new"); }
+            }
+            MenuItem {
+                title: "Open...";
+                shortcut: @keys(Control + O);
+                activated => { root.action("file.open"); }
+            }
+            MenuSeparator {}
+            MenuItem {
+                title: "Save";
+                shortcut: @keys(Control + S);
+                activated => { root.action("file.save"); }
+            }
+            MenuItem {
+                title: "Save as...";
+                shortcut: @keys(Control + Shift + S);
+                activated => { root.action("file.save-as"); }
+            }
+            MenuSeparator {}
+            MenuItem {
+                title: "Quit";
+                shortcut: @keys(Control + Q);
+                activated => { root.action("file.quit"); }
+            }
+        }
+        Menu {
+            title: "Edit";
+            MenuItem {
+                title: "Undo";
+                shortcut: @keys(Control + Z);
+                activated => { root.action("edit.undo"); }
+            }
+            MenuItem {
+                title: "Redo";
+                shortcut: @keys(Control + Shift + Z);
+                activated => { root.action("edit.redo"); }
+            }
+            MenuSeparator {}
+            MenuItem {
+                title: "Select all";
+                shortcut: @keys(Control + A);
+                activated => { root.action("edit.select-all"); }
+            }
+        }
+        Menu {
+            title: "View";
+            MenuItem {
+                title: "Dark";
+                activated => { root.action("view.dark"); }
+            }
+            MenuItem {
+                title: "Light";
+                activated => { root.action("view.light"); }
+            }
+        }
+        Menu {
+            title: "Help";
+            MenuItem {
+                title: "Keyboard shortcuts";
+                shortcut: @keys(F1);
+                activated => { root.action("help.shortcuts"); }
+            }
+            MenuItem {
+                title: "About Notes";
+                activated => { root.action("help.about"); }
+            }
+        }
+    }
+
+    Rectangle {
+        background: root.dark ? #15171a : #f5f6f8;
+
+        VerticalLayout {
+            spacing: 0px;
+
+            // toolbar
+            Rectangle {
+                height: 46px;
+                background: root.panel2;
+                border-width: 1px;
+                border-color: root.border-color;
+
+                HorizontalLayout {
+                    padding-left: 8px;
+                    padding-right: 8px;
+                    spacing: 6px;
+                    alignment: start;
+
+                    Button { text: "New document"; clicked => { root.action("file.new"); } }
+                    Button { text: "Open..."; clicked => { root.action("file.open"); } }
+                    Button { text: "Save"; primary: true; clicked => { root.action("file.save"); } }
+                    Rectangle { horizontal-stretch: 1; }
+                    Text {
+                        text: "Ctrl+N  Ctrl+O  Ctrl+S";
+                        color: root.muted;
+                        font-size: 11px;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+
+            // editor
+            Rectangle {
+                vertical-stretch: 1;
+                background: root.panel;
+
+                Text {
+                    x: 20px;
+                    y: 18px;
+                    text: "Type here, open a file (Ctrl+O), or pass one on the command line.";
+                    color: root.muted;
+                    font-family: "monospace";
+                    font-size: 14px;
+                    visible: root.text == "";
+                }
+
+                scroll-view := ScrollView {
+                    x: 8px;
+                    y: 8px;
+                    width: parent.width - 16px;
+                    height: parent.height - 16px;
+
+                    content-width: self.visible-width;
+                    content-height: max(self.visible-height, text-input.preferred-height);
+
+                    text-input := TextInput {
+                        text <=> root.text;
+                        single-line: false;
+                        wrap: word-wrap;
+                        font-family: "monospace";
+                        font-size: 14px;
+                        color: root.text-color;
+                        selection-background-color: #4c9aff;
+                        selection-foreground-color: #ffffff;
+                        page-height: scroll-view.visible-height;
+
+                        edited => { root.edited(self.text); }
+
+                        cursor-position-changed(cpos) => {
+                            if (cpos.y + root.content-y < 0px) {
+                                root.content-y = min(0px, max(scroll-view.visible-height - self.height, -cpos.y));
+                            } else if (cpos.y + root.content-y > scroll-view.visible-height - 20px) {
+                                root.content-y = min(0px, max(scroll-view.visible-height - self.height, scroll-view.visible-height - cpos.y - 20px));
+                            }
+                            root.cursor-moved(self.cursor-position-byte-offset);
+                        }
+                    }
+                }
+            }
+
+            // status bar
+            Rectangle {
+                height: 34px;
+                background: root.panel;
+                border-width: 1px;
+                border-color: root.border-color;
+
+                HorizontalLayout {
+                    padding-left: 12px;
+                    padding-right: 12px;
+                    spacing: 12px;
+
+                    Text {
+                        text: root.status;
+                        horizontal-stretch: 1;
+                        vertical-alignment: center;
+                        color: root.text-color;
+                    }
+                    Text {
+                        text: root.position;
+                        vertical-alignment: center;
+                        color: root.muted;
+                    }
+                }
+            }
+        }
+    }
+
+    // Help overlay
+    if root.help-open : Rectangle {
+        background: #00000088;
+
+        TouchArea { clicked => { root.help-open = false; } }
+
+        Rectangle {
+            x: (root.width - self.width) / 2;
+            y: (root.height - self.height) / 2;
+            width: min(560px, root.width - 40px);
+            height: min(360px, root.height - 40px);
+            background: root.panel;
+            border-radius: 10px;
+            border-width: 1px;
+            border-color: root.border-color;
+
+            VerticalLayout {
+                padding: 20px;
+                spacing: 10px;
+
+                Text {
+                    text: root.help-title;
+                    font-size: 18px;
+                    font-weight: 600;
+                    color: root.text-color;
+                }
+                ScrollView {
+                    vertical-stretch: 1;
+                    Text {
+                        text: root.help-text;
+                        wrap: word-wrap;
+                        color: root.text-color;
+                        font-size: 13px;
+                    }
+                }
+                HorizontalLayout {
+                    alignment: end;
+                    Button { text: "Close"; primary: true; clicked => { root.help-open = false; } }
+                }
+            }
+        }
+    }
+}
